@@ -6,6 +6,7 @@ const DataBonusComponent = () => import('@/cuentasclaras/pages/data-bonus.compon
 const DataCostComponent = () => import('@/cuentasclaras/pages/data-expenses.component.vue');
 const BonusResultPage = () => import('@/cuentasclaras/pages/bonus-result.vue');
 const LoginPage = () => import('@/iam/pages/login-page.component.vue');
+const SchedulePage = () => import('@/cuentasclaras/pages/schedule.component.vue');
 
 const router = createRouter({
     history: createWebHistory(),
@@ -47,6 +48,13 @@ const router = createRouter({
             component: RegisterPageComponent ,
             meta: { title: 'Registro' }
         },
+        {
+            path: '/schedule',
+            name: 'schedule',
+            component: SchedulePage ,
+            meta: { title: 'Mis Cronogramas' }
+        },
+
 
     ]
 });

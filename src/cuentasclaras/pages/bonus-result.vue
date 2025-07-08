@@ -3,6 +3,10 @@ import ResultSection from '@/cuentasclaras/components/result-section.vue';
 import { useBonoStore } from '@/stores/bono';
 import { format, addMonths } from 'date-fns';
 import ToolBarComponent from '@/public/tool-bar-component.vue';
+import { db } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+
 
 export default {
   name: 'ResultadosBono',
@@ -308,10 +312,39 @@ export default {
     }
   },
   methods: {
+    async guardarResultadosEnFirestore() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Debes iniciar sesión para guardar.");
+        return;
+      }
+
+      const docData = {
+        userId: user.uid,
+        fechaGuardado: serverTimestamp(),
+        nombre: `Cronograma ${format(new Date(), 'dd/MM/yyyy HH:mm')}`,
+        inputDatos: this.datos,
+        costes: this.costes,
+        duracion: this.duracionCalculada,
+        convexidad: this.convexidadCalculada,
+        tceaEmisor: this.tceaEmisor,
+        tceaEscudo: this.tceaEmisorEscudo,
+        treaBonista: this.treaBonista,
+        cronograma: this.cronogramaCalculado
+      };
+
+      try {
+        await addDoc(collection(db, 'cronogramas'), docData);
+      } catch (error) {
+        console.error("Error al guardar en Firestore:", error);
+      }
+    },
     goToBonusResult() {
       this.$router.push({ name: 'data-bonus' });
     },
-    goToSchedulPayment() {
+    async guardarYVerCronograma() {
+      await this.guardarResultadosEnFirestore();
       this.$router.push({ name: 'payment-schedule' });
     },
     calcularTIR(flujos, guess = 0.1) {
@@ -344,7 +377,7 @@ export default {
       <div class="header-buttons">
         <h2 class="titulo">Resultados</h2>
         <div class="acciones">
-          <button class="btn btn-primary" @click="goToSchedulPayment">Ver cronograma de pago</button>
+          <button class="btn btn-primary" @click="guardarYVerCronograma">Ver cronograma de pago</button>
           <button class="btn btn-outline" @click="goToBonusResult">Calcular nuevo bono</button>
         </div>
       </div>
