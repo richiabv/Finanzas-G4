@@ -3,7 +3,7 @@ export default {
   name: 'ToolBarComponent',
   methods: {
     goToHome() {
-      this.$router.push({name: 'login'});
+      this.$router.push({name: 'data-bonus'});
     }
   }
 }

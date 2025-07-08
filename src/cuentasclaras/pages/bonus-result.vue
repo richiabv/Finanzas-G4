@@ -2,11 +2,13 @@
 import ResultSection from '@/cuentasclaras/components/result-section.vue';
 import { useBonoStore } from '@/stores/bono';
 import { format, addMonths } from 'date-fns';
+import ToolBarComponent from '@/public/tool-bar-component.vue';
 
 export default {
   name: 'ResultadosBono',
   components: {
-    ResultSection
+    ResultSection,
+    ToolBarComponent
   },
   computed: {
     bonoStore() {
@@ -331,6 +333,7 @@ export default {
 
 <template>
   <div class="scroll-wrapper">
+    <ToolBarComponent />
     <div class="resultados-container">
       <div class="header-buttons">
         <h2 class="titulo">Resultados</h2>

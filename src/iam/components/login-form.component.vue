@@ -45,6 +45,7 @@
     </form>
 
     <div class="divider-with-text"><span>o</span></div>
+
     <div class="social-login">
       <button class="google-btn">
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
@@ -59,15 +60,31 @@
 
     <p class="register-link">
       ¿No tiene cuenta?
-      <a @click="$router.push('/register')" style="cursor: pointer;">Regístrate</a>
+      <a @click="goToRegister">Regístrate</a>
     </p>
   </div>
 </template>
 
 <script>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { auth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { notify } from '@kyvg/vue3-notification';
+
+// Diccionario de errores traducidos
+const firebaseErrorMessages = {
+  'auth/invalid-credential': 'La contraseña o el correo son incorrectos.',
+  'auth/user-not-found': 'No se encontró ninguna cuenta con este correo.',
+  'auth/wrong-password': 'La contraseña es incorrecta.',
+  'auth/too-many-requests': 'Demasiados intentos. Intenta de nuevo más tarde.',
+  'auth/network-request-failed': 'Problema de red. Revisa tu conexión.'
+};
+
+// Función de traducción
+function getFriendlyErrorMessage(error) {
+  return firebaseErrorMessages[error.code] || 'Ocurrió un error inesperado. Intenta de nuevo.';
+}
 
 export default {
   name: 'LoginForm',
@@ -75,37 +92,54 @@ export default {
     const email = ref('');
     const password = ref('');
     const showPassword = ref(false);
+    const router = useRouter();
 
     const togglePassword = () => {
       showPassword.value = !showPassword.value;
+    };
+
+    const handleLogin = async () => {
+      try {
+        const userCredential = await signInWithEmailAndPassword(
+            auth,
+            email.value,
+            password.value
+        );
+
+        notify({
+          title: 'Bienvenido',
+          text: 'Inicio de sesión exitoso',
+          type: 'success',
+          duration: 3000
+        });
+
+        router.push({ name: 'data-bonus' });
+
+      } catch (error) {
+        notify({
+          title: 'Error',
+          text: getFriendlyErrorMessage(error),
+          type: 'error',
+          duration: 4000
+        });
+      }
+    };
+
+    const goToRegister = () => {
+      router.push({ name: 'register' }); // Asegúrate que la ruta 'register' esté definida en router.js
     };
 
     return {
       email,
       password,
       showPassword,
-      togglePassword
+      togglePassword,
+      handleLogin,
+      goToRegister
     };
-  },
-  methods: {
-    async handleLogin() {
-      try {
-        const userCredential = await signInWithEmailAndPassword(
-            auth,
-            this.email,
-            this.password
-        );
-        console.log('Login exitoso:', userCredential.user);
-        this.$router.push({ name: 'data-bonus' });
-      } catch (error) {
-        alert('Error de inicio de sesión: ' + error.message);
-      }
-    }
   }
 };
 </script>
-
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
@@ -194,7 +228,6 @@ export default {
   font-size: 24px;
 }
 
-
 .form-options {
   display: flex;
   justify-content: space-between;
@@ -256,7 +289,6 @@ export default {
   height: 48px;
 }
 
-
 .apple-btn {
   width: 48px;
   height: 48px;
@@ -280,7 +312,6 @@ export default {
   margin-top: 1.5rem;
   font-size: 0.9rem;
   color: #25617E;
-
 }
 
 .register-link a {
@@ -288,8 +319,8 @@ export default {
   text-decoration: none;
   font-weight: 500;
   font-family: 'Inter', sans-serif;
+  cursor: pointer;
 }
-
 
 .link {
   color: #365e73;

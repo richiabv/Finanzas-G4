@@ -1,4 +1,5 @@
 <template>
+  <ToolBarComponent />
   <div class="cronograma-wrapper">
     <h2 class="title">Cronograma de Pagos - Método Alemán</h2>
     <button class="btn btn-success" @click="exportarExcel">Descargar Excel</button>
@@ -52,9 +53,11 @@ import { useBonoStore } from '@/stores/bono';
 import { format, addDays ,addMonths } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import ToolBarComponent from "@/public/tool-bar-component.vue";
 
 export default {
   name: 'PaymentSchedule',
+  components: {ToolBarComponent},
   data() {
     return {
       cronograma: []
