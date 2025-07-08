@@ -1,6 +1,7 @@
 <template>
   <div class="cronograma-wrapper">
     <h2 class="title">Cronograma de Pagos - Método Alemán</h2>
+    <button class="btn btn-success" @click="exportarExcel">Descargar Excel</button>
     <table class="cronograma-table">
       <thead>
       <tr>
@@ -45,7 +46,8 @@
 <script>
 import { useBonoStore } from '@/stores/bono';
 import { format, addDays ,addMonths } from 'date-fns';
-
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 export default {
   name: 'PaymentSchedule',
@@ -192,6 +194,46 @@ export default {
 
         saldo -= A;
       }
+    },
+    exportarExcel() {
+      const wsData = [
+        [
+          'Nº', 'Fecha', 'Bono', 'Interés', 'Cuota', 'Amortización',
+          'Prima', 'Escudo', 'Flujo Emisor', 'Flujo Emisor c/Escudo',
+          'Flujo Bonista', 'Flujo Act.', 'FA x Plazo', 'Factor p/Convexidad'
+        ]
+      ];
+
+      this.cronograma.forEach((fila, i) => {
+        wsData.push([
+          i,
+          fila.fecha,
+          fila.bono,
+          fila.interes,
+          fila.cuota,
+          fila.amortizacion,
+          fila.prima,
+          fila.escudo,
+          fila.flujoEmisor,
+          fila.flujoEmisorEscudo,
+          fila.flujoBonista,
+          fila.flujoActual,
+          fila.faPlazo,
+          fila.factorConvexidad
+        ]);
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Cronograma');
+
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array'
+      });
+
+      const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+      saveAs(blob, 'cronograma_pago.xlsx');
     }
   }
 };
@@ -222,4 +264,10 @@ export default {
   background-color: #f5f5f5;
   font-weight: 600;
 }
+.btn-success {
+  background-color: #198754;
+  color: white;
+  border: none;
+}
 </style>
+
