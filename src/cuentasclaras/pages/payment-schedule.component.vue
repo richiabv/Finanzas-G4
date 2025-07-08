@@ -155,12 +155,18 @@ export default {
   methods: {
     generarCronograma() {
       const N = this.numeroPeriodos;
-      const A = this.valorNominal / N;
       const TES = this.tasaEfectiva;
       const frecuenciaDias = this.frecuenciaMeses * 30;
 
+      const pSegDesMensual = parseFloat((this.costes.pSegDes || '0').replace('%', '').replace(',', '.')) / 100;
+      const pSegDesPer = pSegDesMensual * this.frecuenciaMeses / 30;
+
+      const saldoInicial = this.valorNominal;
+
       const flujoEmisor0 = this.valorComercial - this.costesInicialesEmisor;
       const flujoBonista0 = -(this.valorComercial + this.costesInicialesBonista);
+
+      this.cronograma = [];
 
       this.cronograma.push({
         fecha: format(this.fechaEmisionDate, 'dd/MM/yyyy'),
@@ -178,18 +184,23 @@ export default {
         factorConvexidad: ''
       });
 
-      let saldo = this.valorNominal;
+      // Cuota constante método francés
+      const r = TES + pSegDesPer;
+      const cuota = -saldoInicial * r / (1 - Math.pow(1 + r, -N));
+
+      let saldo = saldoInicial;
       let fechaAnterior = new Date(this.fechaEmisionDate);
 
       for (let i = 1; i <= N; i++) {
         const interes = -saldo * TES;
-        const amort = -A;
-        const cuota = interes + amort;
-        const escudo = -interes * this.impuestoRenta / 100;
-        const prima = (i === N) ? -this.valorNominal * this.primaPorcentaje / 100 : 0;
+        const segDes = -saldo * pSegDesPer;
+        const amort = cuota - interes - segDes;
 
         const nuevaFecha = addDays(fechaAnterior, frecuenciaDias);
         fechaAnterior = new Date(nuevaFecha);
+
+        const prima = (i === N) ? -this.valorNominal * this.primaPorcentaje / 100 : 0;
+        const escudo = -interes * this.impuestoRenta / 100;
 
         const flujoEmisor = cuota + prima;
         const flujoEmisorEscudo = flujoEmisor + escudo;
@@ -214,9 +225,11 @@ export default {
           factorConvexidad: factorConvexidad.toFixed(2)
         });
 
-        saldo -= A;
+        // ⚠️ Actualizamos saldo correctamente para el próximo periodo
+        saldo = saldo + amort;
       }
     },
+
     exportarExcel() {
       const wsData = [[
         'Nº', 'Fecha', 'Bono', 'Interés', 'Cuota', 'Amortización',
@@ -255,22 +268,21 @@ export default {
       const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
       saveAs(blob, 'cronograma_pago.xlsx');
     },
+
     goToResults() {
       this.$router.push({ name: 'bonus-result' });
     },
+
     logout() {
       const auth = getAuth();
       signOut(auth)
-          .then(() => {
-            this.$router.push({ name: 'login' });
-          })
-          .catch((error) => {
-            console.error('Error al cerrar sesión:', error);
-          });
+          .then(() => this.$router.push({ name: 'login' }))
+          .catch((error) => console.error('Error al cerrar sesión:', error));
     }
   }
 };
 </script>
+
 
 <style scoped>
 .cronograma-wrapper {

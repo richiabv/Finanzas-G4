@@ -118,9 +118,11 @@ export default {
       const cronograma = [];
 
       const N = parseInt(this.totalPeriodos);
-      const A = this.valorNominal / N;
       const TES = parseFloat(this.tasaEfectivaPeriodo.replace('%', '')) / 100;
       const frecuenciaDias = this.frecuenciaDias;
+
+      const pSegDesMensual = parseFloat((this.costes.pSegDes || '0').replace('%', '').replace(',', '.')) / 100;
+      const pSegDesPer = pSegDesMensual * this.frecuenciaMeses / 30;
 
       const flujoEmisor0 = this.valorComercial - this.costesInicialesEmisor;
       const flujoBonista0 = -(this.valorComercial + this.costesInicialesBonista);
@@ -131,12 +133,16 @@ export default {
         flujoEmisorEscudo: flujoEmisor0
       });
 
-      let saldo = this.valorNominal;
+      const saldoInicial = this.valorNominal;
+      const r = TES + pSegDesPer;
+      const cuota = -saldoInicial * r / (1 - Math.pow(1 + r, -N));
+
+      let saldo = saldoInicial;
 
       for (let i = 1; i <= N; i++) {
         const interes = -saldo * TES;
-        const amort = -A;
-        const cuota = interes + amort;
+        const segDes = -saldo * pSegDesPer;
+        const amort = cuota - interes - segDes;
         const prima = (i === N) ? -this.valorNominal * this.primaPorcentaje / 100 : 0;
         const escudo = -interes * this.impuestoRenta / 100;
 
@@ -145,12 +151,12 @@ export default {
         const flujoBonista = -flujoEmisor;
 
         cronograma.push({
-          flujoBonista: flujoBonista,
-          flujoEmisor: flujoEmisor,
-          flujoEmisorEscudo: flujoEmisorEscudo
+          flujoBonista,
+          flujoEmisor,
+          flujoEmisorEscudo
         });
 
-        saldo -= A;
+        saldo += amort;
       }
 
       return cronograma;
