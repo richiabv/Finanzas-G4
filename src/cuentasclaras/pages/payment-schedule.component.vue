@@ -41,6 +41,10 @@
       </tbody>
     </table>
   </div>
+  <div class="boton-volver-wrapper">
+    <button class="btn btn-outline" @click="goToDataBonus">Volver a ingresar datos</button>
+  </div>
+
 </template>
 
 <script>
@@ -234,7 +238,11 @@ export default {
 
       const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
       saveAs(blob, 'cronograma_pago.xlsx');
+    },
+    goToDataBonus() {
+      this.$router.push({ name: 'data-bonus' });
     }
+
   }
 };
 </script>
@@ -269,5 +277,21 @@ export default {
   color: white;
   border: none;
 }
+.boton-volver-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-outline {
+  border: 1px solid #365e73;
+  background-color: white;
+  color: #365e73;
+  padding: 0.6rem 1.5rem;
+  font-weight: 500;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 </style>
 
