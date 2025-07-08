@@ -1,8 +1,21 @@
 <template>
   <ToolBarComponent />
+
   <div class="cronograma-wrapper">
-    <h2 class="title">Cronograma de Pagos - Método Alemán</h2>
-    <button class="btn btn-success" @click="exportarExcel">Descargar Excel</button>
+    <div class="header-row">
+      <div class="left-actions">
+        <span class="back-link" @click="goToResults">
+          <span class="material-symbols-outlined">arrow_back</span>
+          Regresar a Resultados
+        </span>
+        <h2 class="title">Cronograma de pago</h2>
+      </div>
+      <button class="download-btn" @click="exportarExcel">
+        <span class="material-symbols-outlined">download</span>
+        Descargar cronograma
+      </button>
+    </div>
+
     <table class="cronograma-table">
       <thead>
       <tr>
@@ -42,22 +55,18 @@
       </tbody>
     </table>
   </div>
-  <div class="boton-volver-wrapper">
-    <button class="btn btn-outline" @click="goToDataBonus">Volver a ingresar datos</button>
-  </div>
-
 </template>
 
 <script>
 import { useBonoStore } from '@/stores/bono';
-import { format, addDays ,addMonths } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import ToolBarComponent from "@/public/tool-bar-component.vue";
 
 export default {
   name: 'PaymentSchedule',
-  components: {ToolBarComponent},
+  components: { ToolBarComponent },
   data() {
     return {
       cronograma: []
@@ -162,7 +171,7 @@ export default {
       });
 
       let saldo = this.valorNominal;
-      let fechaAnterior = new Date(this.fechaEmisionDate); // cuota 0
+      let fechaAnterior = new Date(this.fechaEmisionDate);
 
       for (let i = 1; i <= N; i++) {
         const interes = -saldo * TES;
@@ -171,14 +180,12 @@ export default {
         const escudo = -interes * this.impuestoRenta / 100;
         const prima = (i === N) ? -this.valorNominal * this.primaPorcentaje / 100 : 0;
 
-        // Sumar días (frecuencia del cupón)
         const nuevaFecha = addDays(fechaAnterior, frecuenciaDias);
-        fechaAnterior = new Date(nuevaFecha); // guardar para la siguiente iteración
+        fechaAnterior = new Date(nuevaFecha);
 
         const flujoEmisor = cuota + prima;
         const flujoEmisorEscudo = flujoEmisor + escudo;
         const flujoBonista = -flujoEmisor;
-
         const flujoActual = flujoBonista / Math.pow(1 + this.cok, i);
         const faPlazo = flujoActual * i * frecuenciaDias / this.diasPorAnio;
         const factorConvexidad = flujoActual * i * (i + 1);
@@ -242,24 +249,66 @@ export default {
       const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
       saveAs(blob, 'cronograma_pago.xlsx');
     },
-    goToDataBonus() {
-      this.$router.push({ name: 'data-bonus' });
+    goToResults() {
+      this.$router.push({ name: 'bonus-result' });
     }
-
   }
 };
 </script>
 
 <style scoped>
 .cronograma-wrapper {
-  padding: 1rem;
+  padding: 1.5rem;
   font-family: 'Inter', sans-serif;
 }
-.title {
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
-  font-size: 20px;
-  font-weight: 600;
 }
+
+.left-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  color: #25617E;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.back-link .material-symbols-outlined {
+  font-size: 18px;
+  margin-right: 4px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.download-btn {
+  border: 2px solid #25617E;
+  background-color: white;
+  color: #25617E;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .cronograma-table {
   width: 100%;
   border-collapse: collapse;
@@ -275,26 +324,4 @@ export default {
   background-color: #f5f5f5;
   font-weight: 600;
 }
-.btn-success {
-  background-color: #198754;
-  color: white;
-  border: none;
-}
-.boton-volver-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-}
-
-.btn-outline {
-  border: 1px solid #365e73;
-  background-color: white;
-  color: #365e73;
-  padding: 0.6rem 1.5rem;
-  font-weight: 500;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
 </style>
-
