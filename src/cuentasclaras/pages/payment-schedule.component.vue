@@ -12,7 +12,7 @@
       </div>
 
       <div class="right-actions">
-        <button class="download-btn" @click="exportarExcel">
+        <button class="download-btn" @click="descargarYGuardar">
           <span class="material-symbols-outlined">download</span>
           Descargar cronograma
         </button>
@@ -71,6 +71,8 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import ToolBarComponent from "@/public/tool-bar-component.vue";
 import { getAuth, signOut } from 'firebase/auth';
+import { db } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default {
   name: 'PaymentSchedule',
@@ -101,12 +103,8 @@ export default {
     },
     frecuenciaMeses() {
       const map = {
-        Mensual: 1,
-        Bimestral: 2,
-        Trimestral: 3,
-        Cuatrimestral: 4,
-        Semestral: 6,
-        Anual: 12
+        Mensual: 1, Bimestral: 2, Trimestral: 3,
+        Cuatrimestral: 4, Semestral: 6, Anual: 12
       };
       return map[this.datos.frecuencia] || 0;
     },
@@ -153,6 +151,27 @@ export default {
     this.generarCronograma();
   },
   methods: {
+
+    async guardarCronogramaEnFirestore() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return alert("Debes iniciar sesión");
+
+      const doc = {
+        userId: user.uid,
+        fechaGuardado: serverTimestamp(),
+        nombre: `Cronograma ${format(new Date(), 'dd/MM/yyyy HH:mm')}`,
+        inputDatos: this.datos,
+        costes: this.costes,
+        cronograma: this.cronograma
+      };
+
+      try {
+        await addDoc(collection(db, "cronogramas"), doc);
+      } catch (error) {
+        console.error("Error al guardar:", error);
+      }
+    },
     generarCronograma() {
       const N = this.numeroPeriodos;
       const TES = this.tasaEfectiva;
@@ -184,7 +203,6 @@ export default {
         factorConvexidad: ''
       });
 
-      // Cuota constante método francés
       const r = TES + pSegDesPer;
       const cuota = -saldoInicial * r / (1 - Math.pow(1 + r, -N));
 
@@ -225,7 +243,6 @@ export default {
           factorConvexidad: factorConvexidad.toFixed(2)
         });
 
-        // ⚠️ Actualizamos saldo correctamente para el próximo periodo
         saldo = saldo + amort;
       }
     },
@@ -278,7 +295,11 @@ export default {
       signOut(auth)
           .then(() => this.$router.push({ name: 'login' }))
           .catch((error) => console.error('Error al cerrar sesión:', error));
-    }
+    },
+    descargarYGuardar() {
+      this.exportarExcel();
+      this.guardarCronogramaEnFirestore();
+    },
   }
 };
 </script>
