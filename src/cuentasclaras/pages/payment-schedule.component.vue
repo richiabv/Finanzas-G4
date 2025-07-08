@@ -10,10 +10,17 @@
         </span>
         <h2 class="title">Cronograma de pago</h2>
       </div>
-      <button class="download-btn" @click="exportarExcel">
-        <span class="material-symbols-outlined">download</span>
-        Descargar cronograma
-      </button>
+
+      <div class="right-actions">
+        <button class="download-btn" @click="exportarExcel">
+          <span class="material-symbols-outlined">download</span>
+          Descargar cronograma
+        </button>
+        <button class="logout-btn" @click="logout">
+          <span class="material-symbols-outlined">logout</span>
+          Cerrar sesión
+        </button>
+      </div>
     </div>
 
     <table class="cronograma-table">
@@ -63,6 +70,7 @@ import { format, addDays } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import ToolBarComponent from "@/public/tool-bar-component.vue";
+import { getAuth, signOut } from 'firebase/auth';
 
 export default {
   name: 'PaymentSchedule',
@@ -147,7 +155,7 @@ export default {
   methods: {
     generarCronograma() {
       const N = this.numeroPeriodos;
-      const A = (this.valorNominal / N);
+      const A = this.valorNominal / N;
       const TES = this.tasaEfectiva;
       const frecuenciaDias = this.frecuenciaMeses * 30;
 
@@ -210,13 +218,11 @@ export default {
       }
     },
     exportarExcel() {
-      const wsData = [
-        [
-          'Nº', 'Fecha', 'Bono', 'Interés', 'Cuota', 'Amortización',
-          'Prima', 'Escudo', 'Flujo Emisor', 'Flujo Emisor c/Escudo',
-          'Flujo Bonista', 'Flujo Act.', 'FA x Plazo', 'Factor p/Convexidad'
-        ]
-      ];
+      const wsData = [[
+        'Nº', 'Fecha', 'Bono', 'Interés', 'Cuota', 'Amortización',
+        'Prima', 'Escudo', 'Flujo Emisor', 'Flujo Emisor c/Escudo',
+        'Flujo Bonista', 'Flujo Act.', 'FA x Plazo', 'Factor p/Convexidad'
+      ]];
 
       this.cronograma.forEach((fila, i) => {
         wsData.push([
@@ -251,6 +257,16 @@ export default {
     },
     goToResults() {
       this.$router.push({ name: 'bonus-result' });
+    },
+    logout() {
+      const auth = getAuth();
+      signOut(auth)
+          .then(() => {
+            this.$router.push({ name: 'login' });
+          })
+          .catch((error) => {
+            console.error('Error al cerrar sesión:', error);
+          });
     }
   }
 };
@@ -260,19 +276,29 @@ export default {
 .cronograma-wrapper {
   padding: 1.5rem;
   font-family: 'Inter', sans-serif;
+  overflow-x: auto;
+  max-height: 80vh;
+  overflow-y: auto;
 }
+
 
 .header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
 }
 
 .left-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.8rem;
+}
+
+.right-actions {
+  display: flex;
+  gap: 0.8rem;
 }
 
 .back-link {
@@ -296,10 +322,9 @@ export default {
   margin: 0;
 }
 
-.download-btn {
-  border: 2px solid #25617E;
+.download-btn, .logout-btn {
+  border: 2px solid;
   background-color: white;
-  color: #25617E;
   padding: 0.6rem 1.2rem;
   font-weight: 600;
   border-radius: 8px;
@@ -307,6 +332,16 @@ export default {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.download-btn {
+  color: #25617E;
+  border-color: #25617E;
+}
+
+.logout-btn {
+  color: #dc3545;
+  border-color: #dc3545;
 }
 
 .cronograma-table {
