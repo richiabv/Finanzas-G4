@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 const PaymentSchedulePage = () => import('@/cuentasclaras/pages/payment-schedule.component.vue');
-const ProfileBonusPage = () => import('@/cuentasclaras/pages/profile-bonus-page.vue');
 const DataBonusComponent = () => import('@/cuentasclaras/pages/data-bonus.component.vue');
 const DataCostComponent = () => import('@/cuentasclaras/pages/data-expenses.component.vue');
 const BonusResultPage = () => import('@/cuentasclaras/pages/bonus-result.vue');
@@ -10,12 +9,7 @@ const LoginPage = () => import('@/iam/pages/login-page.component.vue');
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        {
-            path: '/bonus/profile',
-            name: 'profile-bonus',
-            component: ProfileBonusPage,
-            meta: { title: 'Perfil Financiero' }
-        },
+
         {
             path: '/bonus/data',
             name: 'data-bonus',
