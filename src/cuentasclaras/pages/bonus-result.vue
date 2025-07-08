@@ -344,7 +344,6 @@ export default {
       this.$router.push({ name: 'data-bonus' });
     },
     async guardarYVerCronograma() {
-      await this.guardarResultadosEnFirestore();
       this.$router.push({ name: 'payment-schedule' });
     },
     calcularTIR(flujos, guess = 0.1) {
