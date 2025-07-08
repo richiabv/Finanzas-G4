@@ -1,7 +1,7 @@
 <template>
   <div class="login-page">
     <div class="right-image">
-      <login-form />
+      <register-form />
     </div>
     <div class="left-form">
       <auth-background />
@@ -10,12 +10,12 @@
 </template>
 
 <script>
-import LoginForm from "@/iam/components/login-form.component.vue";
+import RegisterForm from "@/iam/components/register-form.component.vue";
 import AuthBackground from "@/iam/components/auth-background.component.vue";
 
 export default {
-  name: 'LoginPage',
-  components: { AuthBackground, LoginForm }
+  name: 'RegisterPage',
+  components: { AuthBackground, RegisterForm }
 };
 </script>
 

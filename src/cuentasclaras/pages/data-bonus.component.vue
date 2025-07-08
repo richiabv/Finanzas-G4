@@ -61,7 +61,7 @@ export default {
       <BonoHeader :activeStep="1" />
 
       <div class="bono-subtitle">
-        <h2>2. Datos de bono</h2>
+        <h2>1. Datos de bono</h2>
         <p>Ingresa la información del bono</p>
       </div>
 

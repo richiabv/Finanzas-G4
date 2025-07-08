@@ -1,29 +1,3 @@
-<script>
-import { ref } from 'vue'
-
-export default {
-  name: 'LoginForm',
-
-  setup() {
-    const showPassword = ref(false)
-
-    const togglePassword = () => {
-      showPassword.value = !showPassword.value
-    }
-
-    return {
-      showPassword,
-      togglePassword
-    }
-  },
-  methods: {
-    goToDataBonus() {
-      this.$router.push({name: 'data-bonus'});
-    }
-  }
-}
-</script>
-
 <template>
   <div class="login-form-container">
     <h1 class="logo">
@@ -33,23 +7,30 @@ export default {
 
     <h2 class="form-title">Inicia sesión</h2>
 
-    <form class="login-form" @submit.prevent="goToDataBonus">
+    <form class="login-form" @submit.prevent="handleLogin">
       <label for="email">Correo electrónico</label>
-      <input id="email" type="email" placeholder="example@email.com" class="input-password" />
+      <input
+          id="email"
+          type="email"
+          v-model="email"
+          placeholder="example@email.com"
+          class="input-password"
+      />
 
       <label for="password">Contraseña</label>
       <div class="password-wrapper">
         <input
             id="password"
             :type="showPassword ? 'text' : 'password'"
+            v-model="password"
             class="input-password"
         />
         <span
             class="material-symbols-outlined toggle-password"
             @click="togglePassword"
         >
-    {{ showPassword ? 'visibility_off' : 'visibility' }}
-  </span>
+          {{ showPassword ? 'visibility_off' : 'visibility' }}
+        </span>
       </div>
 
       <div class="form-options">
@@ -57,15 +38,13 @@ export default {
           <input type="checkbox" />
           Recuérdame
         </label>
-        <a  class="link">¿Olvidé mi contraseña?</a>
+        <a class="link">¿Olvidé mi contraseña?</a>
       </div>
 
-      <button  type="submit" class="submit-btn">Ingresa</button>
+      <button type="submit" class="submit-btn">Ingresa</button>
     </form>
 
-    <div class="divider-with-text">
-      <span>o</span>
-    </div>
+    <div class="divider-with-text"><span>o</span></div>
     <div class="social-login">
       <button class="google-btn">
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
@@ -75,14 +54,56 @@ export default {
         <img src="@/assets/apple.svg" alt="Apple" />
       </button>
     </div>
+
     <div class="separator-line"></div>
 
     <p class="register-link">
       ¿No tiene cuenta?
-      <a >Regístrate</a>
+      <a @click="$router.push('/register')" style="cursor: pointer;">Regístrate</a>
     </p>
   </div>
 </template>
+
+<script>
+import { ref } from 'vue';
+import { auth } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
+export default {
+  name: 'LoginForm',
+  setup() {
+    const email = ref('');
+    const password = ref('');
+    const showPassword = ref(false);
+
+    const togglePassword = () => {
+      showPassword.value = !showPassword.value;
+    };
+
+    return {
+      email,
+      password,
+      showPassword,
+      togglePassword
+    };
+  },
+  methods: {
+    async handleLogin() {
+      try {
+        const userCredential = await signInWithEmailAndPassword(
+            auth,
+            this.email,
+            this.password
+        );
+        console.log('Login exitoso:', userCredential.user);
+        this.$router.push({ name: 'data-bonus' });
+      } catch (error) {
+        alert('Error de inicio de sesión: ' + error.message);
+      }
+    }
+  }
+};
+</script>
 
 
 

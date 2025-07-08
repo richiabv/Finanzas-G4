@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import RegisterPageComponent from "@/iam/pages/register-page.component.vue";
 
 const PaymentSchedulePage = () => import('@/cuentasclaras/pages/payment-schedule.component.vue');
 const DataBonusComponent = () => import('@/cuentasclaras/pages/data-bonus.component.vue');
@@ -40,7 +41,12 @@ const router = createRouter({
             component: PaymentSchedulePage ,
             meta: { title: 'Cronogramas de pagos' }
         },
-
+        {
+            path: '/register',
+            name: 'register',
+            component: RegisterPageComponent ,
+            meta: { title: 'Registro' }
+        },
 
     ]
 });

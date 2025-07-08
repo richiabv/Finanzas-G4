@@ -42,8 +42,8 @@ export default {
 
     <div class="bono-content">
       <div class="bono-subtitle">
-        <h2>3. Datos de costes / gastos iniciales</h2>
-        <p>Ingresa la información de los costes y gastos</p>
+        <h2>2. Datos de los costes / gastos iniciales</h2>
+        <p>Ingresa la información de los costes </p>
       </div>
 
       <form class="bono-form">
